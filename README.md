@@ -32,3 +32,9 @@ Default settings for Mapnik are as follows:
 		'srs':'+init=epsg:3857'
 		
 Table names are geo\_adminarea, geo\_world, geo\_timor.
+
+Usage: 
+
+    docker run --rm -p 8085:80 --li leaflet_gis_1:gis digitaltl/simplewms
+    
+To provide images on port 8085 of docker host, and PostGIS database connection to leaflet\_gis\_1.
