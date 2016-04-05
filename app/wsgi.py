@@ -1,14 +1,26 @@
 from urlparse import parse_qs
 import math
+import logging
 
+logging.basicConfig(level=logging.DEBUG)
 __author__ = 'josh'
 import mapnik
 import StringIO
 from PIL import Image
+try:
+    import pylibmc
+    cache = pylibmc.Client(['memcached'], binary=True, 
+        behaviors={"tcp_nodelay": True,
+        "ketama": True})
+except ImportError, e:
+    logging.warning( "No memcache! {}".format(e.msg))
+    cache = False
+
 
 wms_keys = ('SRS','BBOX','SERVICE','LAYERS','STYLES','FORMAT','VERSION','REQUEST','WIDTH','HEIGHT')
 wms_keys_lower = [k.lower() for k in wms_keys]
 SRS = '+init=epsg:3857'
+# from globalmaptiles import GlobalMercator
 
 def DEFAULT_MAP_SETTINGS():
 	return {
@@ -77,8 +89,12 @@ def tile_to_box(x,y,z):
 
 
 def application(env, start_response):
-    d = parse_qs(env['QUERY_STRING'])
+    qs = env['QUERY_STRING']
 
+    d = parse_qs(qs)
+    if qs == '':
+        qs = 'default'
+    logging.info('Query is {}'.format(qs))
     if 'x' in d and 'y' in d and 'z' in d:
         request = TileRequest()
 
@@ -91,10 +107,25 @@ def application(env, start_response):
         if key == 'pcode':
             request.GET['pcode'] = value[0]
 
-    output = wms(request)
-
+    if cache:
+        try:
+            image = cache.get(qs)
+            logging.info('Cache retrieved for map {}'.format(qs))
+        except:
+            raise
+    
+    if not image:
+        image = wms(request).getvalue()
+        if cache:
+            try:
+                cache.set(qs,image)
+                logging.info('Cache set for map {}'.format(qs))
+                
+            except:
+                raise
+        
     start_response('200 OK', [('Content-Type','image/jpeg'), ('Access-Control-Allow-Origin', '*')])
-    return [output.getvalue()]
+    return [image]
 
 
 class WGS84Tile():
@@ -133,6 +164,8 @@ class WGS84Tile():
 
 def wms(request, return_format='raw'):
 
+
+
     map_settings = DEFAULT_MAP_SETTINGS()
     map_settings.update({'table': 'geo_adminarea'})
     world_settings = DEFAULT_MAP_SETTINGS()
@@ -156,26 +189,18 @@ def wms(request, return_format='raw'):
     for i, j in request.GET.items():
         i = i.lower()
 
-        # print i
-        # print params[i]
-        # print j
-
         if i in params.keys() and params[i] != j:
-            print '{}: {}'.format(i,j)
+            logging.info( '{}: {}'.format(i,j) )
             params[i] = j
         if i in ['width','height']:
             params[i] = int(j)
 
-    print params['bbox'], params['width'], params['height']
-    print request.GET.items()
 
     m = mapnik.Map(params['width'], params['height'], srs=SRS)
     im = mapnik.Image(params['width'], params['height'])
     m.background = mapnik.Color('#C4DFFF')
     layer_s = mapnik.Style() # style object to hold rules
-     # style object to hold rules
     layer_r = mapnik.Rule()
-
 
     if request.GET.get('pcode'):
         pcodes = request.GET.get('pcode').split(',')
@@ -255,7 +280,6 @@ def wms(request, return_format='raw'):
     pil_image = Image.frombytes('RGBA', [params['width'], params['height']], im.tostring())
     output = StringIO.StringIO()
     pil_image.save(output, format='jpeg')
-
 
     if return_format == 'image':
         return pil_image

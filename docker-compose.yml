@@ -1,0 +1,16 @@
+gis:
+  build: digitaltl/postgis
+web:
+  build: .
+  links:
+    - gis
+    - memcached
+  ports: 
+    - "8085:8081"
+  command: ["uwsgi", "--http", ":8081", "/home/simplewms/app/uwsgi.ini"]
+
+memcached:
+  build: digitaltl/memcached
+  ports:
+    - "11211"
+  command: ["memcached"]
