@@ -17,6 +17,7 @@ RUN	pip install -U pip \
  	mapnik gunicorn tilestache shapely \
     	Pillow modestmaps simplejson werkzeug
 
+RUN apt-get install memcached
 RUN pip install pylibmc
 RUN pip install uwsgi
 
