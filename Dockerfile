@@ -17,7 +17,7 @@ RUN	pip install -U pip \
  	mapnik gunicorn tilestache shapely \
     	Pillow modestmaps simplejson werkzeug
 
-RUN apt-get install memcached
+RUN apt-get install -y libmemcached-dev libmemcached10
 RUN pip install pylibmc
 RUN pip install uwsgi
 
@@ -26,13 +26,13 @@ RUN sed -i 's/Image.fromstring/Image.frombytes/' /usr/local/lib/python2.7/dist-p
 RUN if [ -f "/etc/apt/apt.conf.d/30proxy" ]; then rm /etc/apt/apt.conf.d/30proxy; fi
 
 
-RUN 	useradd -ms /bin/bash tilestache
-USER	tilestache
-WORKDIR /home/tilestache
-RUN 	mkdir /home/tilestache/app
-COPY 	app /home/tilestache/app/
+RUN 	useradd -ms /bin/bash simplewms
+USER	simplewms
+WORKDIR /home/simplewms
+RUN 	mkdir /home/simplewms/app
+COPY 	app /home/simplewms/app/
 
 
 EXPOSE 8080
-CMD ["uwsgi", "/home/tilestache/app/uwsgi.ini"]
+CMD ["uwsgi", "/home/simplewms/app/uwsgi.ini"]
 
