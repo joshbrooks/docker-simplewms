@@ -9,6 +9,7 @@ import StringIO
 from PIL import Image
 try:
     import pylibmc
+    # Try to connect to a memcached server named "memcached"
     cache = pylibmc.Client(['memcached'], binary=True, 
         behaviors={"tcp_nodelay": True,
         "ketama": True})
@@ -22,18 +23,15 @@ wms_keys_lower = [k.lower() for k in wms_keys]
 SRS = '+init=epsg:3857'
 # from globalmaptiles import GlobalMercator
 
-def DEFAULT_MAP_SETTINGS():
-	return {
-		'dbname': 'gis',
-		'table': 'geo_adminarea',
-		'host':' gis',
-		'password':None,
-		'user':'josh',
-		'srs':'+init=epsg:3857'
-	}
-
-
-
+base = '/home/simplewms/data'
+sources = {
+    'district': mapnik.SQLite(base=base, file='district.sqlite', table='district'),
+    'timor': mapnik.SQLite(base=base, file='timor.sqlite', table='timor'),
+    'world': mapnik.SQLite(base=base, file='world.sqlite', table='world'),
+    'subdistrict': mapnik.SQLite(base=base, file='subdistrict.sqlite', table='subdistrict'),
+    'suco': mapnik.SQLite(base=base, file='suco.sqlite', table='suco')
+    }
+    
 class Request(object):
 
     GET = {}
@@ -111,8 +109,9 @@ def application(env, start_response):
         try:
             image = cache.get(qs)
             logging.info('Cache retrieved for map {}'.format(qs))
-        except:
-            raise
+        except Exception, e:
+            logging.error(e.message)
+            image = False
     
     if not image:
         image = wms(request).getvalue()
@@ -121,8 +120,8 @@ def application(env, start_response):
                 cache.set(qs,image)
                 logging.info('Cache set for map {}'.format(qs))
                 
-            except:
-                raise
+            except Exception, e:
+                logging.error(e.message)
         
     start_response('200 OK', [('Content-Type','image/jpeg'), ('Access-Control-Allow-Origin', '*')])
     return [image]
@@ -164,14 +163,7 @@ class WGS84Tile():
 
 def wms(request, return_format='raw'):
 
-
-
-    map_settings = DEFAULT_MAP_SETTINGS()
-    map_settings.update({'table': 'geo_adminarea'})
-    world_settings = DEFAULT_MAP_SETTINGS()
-    world_settings.update({'table': 'geo_world'})
-    base_settings = DEFAULT_MAP_SETTINGS()
-    base_settings.update({'table': 'geo_timor'})
+    # Data sources
 
     params = {
         'service':'WMS',
@@ -199,37 +191,8 @@ def wms(request, return_format='raw'):
     m = mapnik.Map(params['width'], params['height'], srs=SRS)
     im = mapnik.Image(params['width'], params['height'])
     m.background = mapnik.Color('#C4DFFF')
-    layer_s = mapnik.Style() # style object to hold rules
-    layer_r = mapnik.Rule()
-
-    if request.GET.get('pcode'):
-        pcodes = request.GET.get('pcode').split(',')
-        if len(pcodes) >= 1:
-            expression = ' or '.join(["[pcode] = %s"%p for p in pcodes])
-            layer_r.filter = mapnik.Expression(expression)
-
-            layer_polygon_symbolizer = mapnik.PolygonSymbolizer()
-            layer_polygon_symbolizer.fill = mapnik.Color('#008000')
-
-            layer_line_symbolizer = mapnik.LineSymbolizer()
-            layer_line_symbolizer.stroke = mapnik.Color('#074507')
-            layer_line_symbolizer.stroke_width = 0.1
-
-            layer_r.symbols.append(layer_polygon_symbolizer)
-            layer_r.symbols.append(layer_line_symbolizer)
-
-            layer_s.rules.append(layer_r)
-
-            m.append_style('My Style',layer_s) # Styles are given names only as they are applied to the map
-    layer_ds = mapnik.PostGIS(**map_settings)
-
-    layer = mapnik.Layer('places')
-    layer.srs=SRS
-    layer.datasource = layer_ds
-    layer.styles.append('My Style')
-
-    base_s = mapnik.Style() # style object to hold rules
-     # style object to hold rules
+    
+    base_s = mapnik.Style()
     base_r = mapnik.Rule()
 
     base_polygon_symbolizer = mapnik.PolygonSymbolizer()
@@ -242,7 +205,7 @@ def wms(request, return_format='raw'):
     base_r.symbols.append(base_line_symbolizer)
     base_s.rules.append(base_r)
     m.append_style('Base Style',base_s) # Styles are given names only as they are applied to the map
-    base_ds = mapnik.PostGIS(**base_settings)
+    base_ds = sources.get('timor')
 
 
     base = mapnik.Layer('places')
@@ -263,7 +226,7 @@ def wms(request, return_format='raw'):
     world_s.rules.append(world_r)
     m.append_style('world',world_s)
 
-    world_ds = mapnik.PostGIS(**world_settings)
+    world_ds = sources.get('world')
     world = mapnik.Layer('world')
     world.srs=SRS
     world.datasource = world_ds
@@ -272,9 +235,49 @@ def wms(request, return_format='raw'):
     
     m.layers.append(world)
     m.layers.append(base)
-    m.layers.append(layer)
     
+    # Selected areas to highlight
+    
+    layer_s = mapnik.Style() # style object to hold rules
+    layer_r = mapnik.Rule()
 
+    if request.GET.get('pcode'):
+        pcodes = request.GET.get('pcode').split(',')
+        if len(pcodes) >= 1:
+            expression = ' or '.join(["[pcode] = %s"%p for p in pcodes])
+            layer_r.filter = mapnik.Expression(expression)
+            
+        layer_polygon_symbolizer = mapnik.PolygonSymbolizer()
+        layer_polygon_symbolizer.fill = mapnik.Color('#008000')
+        layer_line_symbolizer = mapnik.LineSymbolizer()
+        layer_line_symbolizer.stroke = mapnik.Color('#074507')
+        layer_line_symbolizer.stroke_width = 0.1
+        layer_r.symbols.append(layer_polygon_symbolizer)
+        layer_r.symbols.append(layer_line_symbolizer)
+        layer_s.rules.append(layer_r)
+        m.append_style('Selected Areas',layer_s) # Styles are given names only as they are applied to the map
+    
+        if [i for i in pcodes if i.isdigit() and int(i) < 100] != []:
+            district = mapnik.Layer('district')
+            district.srs=SRS
+            district.datasource = sources.get('district')
+            district.styles.append('Selected Areas')
+            m.layers.append(district)
+            
+        if [i for i in pcodes if (i.isdigit() and int(i) >= 100 and int(i) < 10000)] != []:
+            subdistrict = mapnik.Layer('subdistrict')
+            subdistrict.srs=SRS
+            subdistrict.datasource = sources.get('subdistrict')
+            subdistrict.styles.append('Selected Areas')
+            m.layers.append(subdistrict)
+
+        if [i for i in pcodes if i.isdigit() and int(i) >= 10000] != []:
+            suco = mapnik.Layer('suco')
+            suco.srs=SRS
+            suco.datasource = sources.get('suco')
+            suco.styles.append('Selected Areas')
+            m.layers.append(suco)
+        
     m.zoom_to_box(mapnik.Box2d(*([float(i) for i in params['bbox'].split(',')])))
     mapnik.render(m, im)
     pil_image = Image.frombytes('RGBA', [params['width'], params['height']], im.tostring())
