@@ -1,7 +1,8 @@
 repo_name: joshbrooks/docker-simplewms
 report_id: f220fb324172eb1ac5018354c7a9904f
+version: 0.1
 repo_type: Public
-timestamp: '2023-11-09T23:02:14+00:00'
+timestamp: '2024-01-04T15:16:52+00:00'
 requested_by: joshbrooks
 provider: github
 branch: master
@@ -16,6 +17,7 @@ tools:
   category: Languages & Frameworks
   sub_category: Languages
   image_url: https://img.stackshare.io/service/993/pUBY5pVj.png
+  detection_source_url: https://github.com/joshbrooks/docker-simplewms
   detection_source: Repo Metadata
 - name: Memcached
   description: High-performance, distributed memory object caching system
@@ -26,6 +28,7 @@ tools:
   category: Data Stores
   sub_category: Databases
   image_url: https://img.stackshare.io/service/1040/hDNnpa4a_400x400.jpg
+  detection_source_url: https://github.com/joshbrooks/docker-simplewms/blob/master/docker-compose.yml
   detection_source: docker-compose.yml
   last_updated_by: Joshua Brooks
   last_updated_on: 2016-04-15 07:39:09.000000000 Z
@@ -38,6 +41,7 @@ tools:
   category: Build, Test, Deploy
   sub_category: Virtual Machine Platforms & Containers
   image_url: https://img.stackshare.io/service/586/n4u37v9t_400x400.png
+  detection_source_url: https://github.com/joshbrooks/docker-simplewms
   detection_source: Repo Metadata
 - name: Git
   description: Fast, scalable, distributed revision control system
@@ -47,6 +51,7 @@ tools:
   category: Build, Test, Deploy
   sub_category: Version Control System
   image_url: https://img.stackshare.io/service/1046/git.png
+  detection_source_url: https://github.com/joshbrooks/docker-simplewms
   detection_source: Repo Metadata
 - name: pip
   description: A package installer for Python
@@ -56,6 +61,7 @@ tools:
   category: Build, Test, Deploy
   sub_category: Front End Package Manager
   image_url: https://img.stackshare.io/service/5559/-RIWgodF_400x400.jpg
+  detection_source_url: https://github.com/joshbrooks/docker-simplewms/blob/master/requirements.txt
   detection_source: requirements.txt
   last_updated_by: Joshua Brooks
   last_updated_on: 2016-04-15 07:40:55.000000000 Z
@@ -67,6 +73,7 @@ tools:
   category: Application Hosting
   sub_category: Web Server Interface
   image_url: https://img.stackshare.io/service/1838/uwsgi.png
+  detection_source_url: https://github.com/joshbrooks/docker-simplewms/blob/master/requirements.txt
   detection_source: requirements.txt
   last_updated_by: Joshua Brooks
   last_updated_on: 2016-04-15 07:40:55.000000000 Z
@@ -78,6 +85,7 @@ tools:
   category: Assets and Media
   sub_category: Image Processing and Management
   image_url: https://img.stackshare.io/service/2375/default_1f67b0ca7416a9f52beb655f90b5602d5ef74b75.jpg
+  detection_source_url: https://github.com/joshbrooks/docker-simplewms/blob/master/requirements.txt
   detection_source: requirements.txt
   last_updated_by: Joshua Brooks
   last_updated_on: 2016-04-15 07:40:55.000000000 Z
