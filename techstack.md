@@ -5,10 +5,10 @@ joshbrooks/docker-simplewms is built on the following main stack:
 
 - [Python](https://www.python.org) – Languages
 - [Memcached](http://memcached.org/) – Databases
+- [Docker](https://www.docker.com/) – Virtual Machine Platforms & Containers
+- [pip](https://pypi.org/project/pip/) – Front End Package Manager
 - [uWSGI](https://github.com/unbit/uwsgi) – Web Server Interface
 - [Pillow](https://python-pillow.github.io/) – Image Processing and Management
-- [pip](https://pypi.org/project/pip/) – Front End Package Manager
-- [Docker](https://www.docker.com/) – Virtual Machine Platforms & Containers
 
 Full tech stack [here](/techstack.md)
 
@@ -20,10 +20,10 @@ joshbrooks/docker-simplewms is built on the following main stack:
 
 - <img width='25' height='25' src='https://img.stackshare.io/service/993/pUBY5pVj.png' alt='Python'/> [Python](https://www.python.org) – Languages
 - <img width='25' height='25' src='https://img.stackshare.io/service/1040/hDNnpa4a_400x400.jpg' alt='Memcached'/> [Memcached](http://memcached.org/) – Databases
+- <img width='25' height='25' src='https://img.stackshare.io/service/586/n4u37v9t_400x400.png' alt='Docker'/> [Docker](https://www.docker.com/) – Virtual Machine Platforms & Containers
+- <img width='25' height='25' src='https://img.stackshare.io/service/5559/-RIWgodF_400x400.jpg' alt='pip'/> [pip](https://pypi.org/project/pip/) – Front End Package Manager
 - <img width='25' height='25' src='https://img.stackshare.io/service/1838/uwsgi.png' alt='uWSGI'/> [uWSGI](https://github.com/unbit/uwsgi) – Web Server Interface
 - <img width='25' height='25' src='https://img.stackshare.io/service/2375/default_1f67b0ca7416a9f52beb655f90b5602d5ef74b75.jpg' alt='Pillow'/> [Pillow](https://python-pillow.github.io/) – Image Processing and Management
-- <img width='25' height='25' src='https://img.stackshare.io/service/5559/-RIWgodF_400x400.jpg' alt='pip'/> [pip](https://pypi.org/project/pip/) – Front End Package Manager
-- <img width='25' height='25' src='https://img.stackshare.io/service/586/n4u37v9t_400x400.png' alt='Docker'/> [Docker](https://www.docker.com/) – Virtual Machine Platforms & Containers
 
 Full tech stack [here](/techstack.md)
 
@@ -34,7 +34,7 @@ Full tech stack [here](/techstack.md)
 # Tech Stack File
 ![](https://img.stackshare.io/repo.svg "repo") [joshbrooks/docker-simplewms](https://github.com/joshbrooks/docker-simplewms)![](https://img.stackshare.io/public_badge.svg "public")
 <br/><br/>
-|7<br/>Tools used|01/05/24 <br/>Report generated|
+|7<br/>Tools used|02/29/24 <br/>Report generated|
 |------|------|
 </div>
 
